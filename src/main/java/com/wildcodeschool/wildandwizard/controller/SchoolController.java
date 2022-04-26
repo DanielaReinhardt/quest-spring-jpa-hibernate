@@ -1,6 +1,12 @@
 package com.wildcodeschool.wildandwizard.controller;
 
+import java.util.Optional;
+
 import com.wildcodeschool.wildandwizard.entity.School;
+import com.wildcodeschool.wildandwizard.entity.Wizard;
+import com.wildcodeschool.wildandwizard.repository.SchoolRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,13 +18,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class SchoolController {
 
     // TODO : get school repository by dependency injection
+    @Autowired
+    private SchoolRepository repository;// oder hier kommt irgendein DAO rein
 
     @GetMapping("/schools")
     public String getAll(Model model) {
 
         // TODO : find all schools
+        //repository.findAll();
 
-        return "schools";
+        model.addAttribute("schools", repository.findAll());
+       
+
+        return "schools"; // oder return List.of(schools);
     }
 
     @GetMapping("/school")
@@ -26,14 +38,24 @@ public class SchoolController {
                             @RequestParam(required = false) Long id) {
 
         // TODO : find one school by id
-
-        return "school";
+       // repository.findByID();
+       School school = new School();
+       if (id != null){
+        Optional<School>  optionalSchool = repository.findById(id);
+        if (optionalSchool.isPresent()) {
+            school = optionalSchool.get();
+        }
+    }
+    model.addAttribute("school", school);
+        
+    return "school";
     }
 
     @PostMapping("/school")
     public String postSchool(@ModelAttribute School school) {
 
         // TODO : create or update a school
+        repository.save(school);
 
         return "redirect:/schools";
     }
@@ -42,6 +64,7 @@ public class SchoolController {
     public String deleteSchool(@RequestParam Long id) {
 
         // TODO : delete a school
+        repository.deleteById(id);
 
         return "redirect:/schools";
     }
